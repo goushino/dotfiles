@@ -19,8 +19,6 @@ set belloff=all
 set number
 set title
 set cursorline
-set laststatus=2
-set wildmenu
 
 " インデント
 filetype plugin indent on
@@ -50,5 +48,61 @@ nnoremap sh <C-w>h
 nnoremap ss :<C-u>sp<CR><C-w>j
 nnoremap sv :<C-u>vs<CR><C-w>l
 
-execute pathogen#infect()
-syntax on
+" , キーで次タブのバッファを表示
+nnoremap <silent> , :bprev<CR>
+" . キーで前タブのバッファを表示
+nnoremap <silent> . :bnext<CR>
+" bdで現在のバッファを削除
+nnoremap bd :bd<CR>
+
+" ====== dein.vim plugin manager ======
+
+" Ward off unexpected things that your distro might have made, as
+" well as sanely reset options when re-sourcing .vimrc
+set nocompatible
+
+" Set Dein base path (required)
+let s:dein_base = '/home/goushino/.cache/dein'
+
+" Set Dein source path (required)
+let s:dein_src = '/home/goushino/.cache/dein/repos/github.com/Shougo/dein.vim'
+
+" Set Dein runtime path (required)
+execute 'set runtimepath+=' . s:dein_src
+
+" tomlセット
+let s:toml_dir=expand('~/.dein/')
+let s:toml=s:toml_dir . 'dein.toml'
+let s:toml_lazy=s:toml_dir . 'dein-lazy.toml'
+
+" プラグインのロード
+if dein#load_state(s:dein_base)
+  " Call Dein initialization (required)
+  call dein#begin(s:dein_base)
+
+  call dein#load_toml(s:toml)
+  call dein#load_toml(s:toml_lazy, {'lazy': 1})
+
+  call dein#end()
+  call dein#save_state()
+endif
+
+" Attempt to determine the type of a file based on its name and possibly its
+" contents. Use this to allow intelligent auto-indenting for each filetype,
+" and for plugins that are filetype specific.
+if has('filetype')
+  filetype indent plugin on
+endif
+
+" Enable syntax highlighting
+if has('syntax')
+  syntax on
+endif
+
+" Uncomment if you want to install not-installed plugins on startup.
+if dein#check_install()
+ call dein#install()
+endif
+
+" ====== dein.vim ここまで ======
+
