@@ -4,7 +4,6 @@ set shell=/bin/zsh
 " encoding
 set encoding=utf8
 scriptencoding utf8
-set fileencoding=utf-8
 
 " スワップファイルの作成先を変更
 set noswapfile
