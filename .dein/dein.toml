@@ -38,7 +38,8 @@ hook_add = '''
   \ : fzf#vim#with_preview({'options': '--delimiter : --nth 4..'}, 'right:50%:hidden', '?'),
   \ <bang>0)
   nnoremap <C-g> :Rg<Space>
-  nnoremap <C-p> :Files<CR>
+  nnoremap <C-p> :GFiles<CR>
+  nnoremap <C-l> :Files<CR>
   nnoremap <C-h> :History<CR>
 '''
 
@@ -63,5 +64,6 @@ hook_add = '''
   nmap <silent> gy <Plug>(coc-type-definition)
   nmap <silent> gi <Plug>(coc-implementation)
   nmap <silent> gr <Plug>(coc-references)
+  nmap <silent> gq <Plug>(coc-format)
   highlight CocFloating ctermbg=239
 '''
