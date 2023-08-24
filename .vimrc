@@ -54,6 +54,11 @@ nnoremap <silent> . :bnext<CR>
 " bdで現在のバッファを削除
 nnoremap bd :bd<CR>
 
+inoremap <C-k> <Up>
+inoremap <C-j> <Down>
+inoremap <C-h> <Left>
+inoremap <C-l> <Right>
+
 " ====== dein.vim plugin manager ======
 
 " Ward off unexpected things that your distro might have made, as
