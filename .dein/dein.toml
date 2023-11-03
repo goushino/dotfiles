@@ -1,47 +1,94 @@
 [[plugins]]
-repo = 'scrooloose/nerdtree'
-hook_add = '''
-  let NERDTreeShowHidden=1
-    nnoremap <silent><C-a> :NERDTreeFind<CR>:vertical res 30<CR>
+repo = 'nvim-treesitter/nvim-treesitter'
+if = 'has("nvim")'
+on_event = 'BufRead'
+hook_post_update = 'TSUpdate'
+lua_source = '''
+  require'nvim-treesitter.configs'.setup {
+    ensure_installed = "all",
+    highlight = {
+      enable = true,
+      disable = {}
+    },
+  }
 '''
 
 [[plugins]]
-repo = 'vim-airline/vim-airline'
+repo = 'nvim-tree/nvim-tree.lua'
 [[plugins]]
-repo = 'vim-airline/vim-airline-themes'
-depends = 'vim-airline'
+repo = 'nvim-tree/nvim-web-devicons'
+lua_add = '''
+  vim.g.loaded_netrw = 1
+  vim.g.loaded_netrwPlugin = 1
+  require("nvim-tree").setup()
+  vim.keymap.set('n', '<leader>e', '<cmd>NvimTreeToggle<CR>')
+'''
+
+[[plugins]]
+repo = 'sainnhe/sonokai'
 hook_add = '''
-  let g:airline_theme = 'onedark'
-  let g:airline#extensions#tabline#enabled = 1
-  let g:airline#extensions#tabline#buffer_idx_mode = 1
-  let g:airline#extensions#tabline#fnamemod = ':t'
+  let g:sonokai_style = 'andromeda'
+  let g:sonokai_better_performance = 1
+  colorscheme sonokai
+'''
+
+[[plugins]]
+repo = 'nvim-lualine/lualine.nvim'
+depends = 'nvim-tree/nvim-web-devicons'
+lua_add = '''
+  require'lualine'.setup {
+    options = {
+      theme = 'sonokai',
+      section_separators = "", -- See issue #773
+      component_separators = ""
+    },
+    tabline = {
+      lualine_a = {'buffers'},
+      lualine_b = {},
+      lualine_c = {},
+      lualine_x = {},
+      lualine_y = {},
+      lualine_z = {}
+    },
+  }
+'''
+
+[[plugins]]
+repo = 'nvim-lua/plenary.nvim'
+[[plugins]]
+repo = 'nvim-telescope/telescope.nvim'
+lua_add = '''
+  local telescope = require("telescope")
+  local telescopeConfig = require("telescope.config")
+  local vimgrep_arguments = { unpack(telescopeConfig.values.vimgrep_arguments) }
+  table.insert(vimgrep_arguments, "--hidden")
+  table.insert(vimgrep_arguments, "--glob")
+  table.insert(vimgrep_arguments, "!**/.git/*")
+  telescope.setup({
+    defaults = {
+      vimgrep_arguments = vimgrep_arguments,
+    },
+    pickers = {
+      find_files = {
+        find_command = { "rg", "--files", "--hidden", "--glob", "!**/.git/*" },
+      },
+    },
+  })
+  local builtin = require('telescope.builtin')
+  vim.keymap.set('n', '<C-p>', builtin.git_files, {})
+  vim.keymap.set('n', '<C-g>', builtin.live_grep, {})
+  vim.keymap.set('n', '<C-l>', builtin.find_files, {})
+  vim.keymap.set('n', '<C-h>', builtin.oldfiles, {})
+'''
+
+[[plugins]]
+repo = 'lukas-reineke/indent-blankline.nvim'
+lua_add = '''
+  require("ibl").setup()
 '''
 
 [[plugins]]
 repo = 'simeji/winresizer'
-
-# fzf
-[[plugins]]
-repo = 'junegunn/fzf'
-hook_post_update = './install --all'
-merged = 0
-
-# fzf.vim
-[[plugins]]
-repo = 'junegunn/fzf.vim'
-depends = 'fzf'
-hook_add = '''
-  command! -bang -nargs=* Rg
-  \ call fzf#vim#grep(
-  \ 'rg --column --line-number --hidden --ignore-case --no-heading --color=always '.shellescape(<q-args>), 1,
-  \ <bang>0 ? fzf#vim#with_preview({'options': '--delimiter : --nth 4..'}, 'up:60%')
-  \ : fzf#vim#with_preview({'options': '--delimiter : --nth 4..'}, 'right:50%:hidden', '?'),
-  \ <bang>0)
-  nnoremap <C-g> :Rg<Space>
-  nnoremap <C-p> :GFiles<CR>
-  nnoremap <C-l> :Files<CR>
-  nnoremap <C-h> :History<CR>
-'''
 
 [[plugins]]
 repo = 'neoclide/coc.nvim'
@@ -49,83 +96,122 @@ rev = 'release'
 build = '''
   git checkout release
 '''
-hook_add = '''
-  inoremap <silent><expr> <TAB>
-        \ coc#pum#visible() ? coc#pum#next(1) :
-        \ CheckBackspace() ? "\<TAB>" :
-        \ coc#refresh()
-  inoremap <expr><S-TAB> coc#pum#visible() ? coc#pum#prev(1) : "\<C-h>"
-  function! CheckBackspace() abort
-    let col = col('.') - 1
-    return !col || getline('.')[col - 1]  =~# '\s'
-  endfunction
-  if has('nvim')
-    inoremap <silent><expr> <c-space> coc#refresh()
-  else
-    inoremap <silent><expr> <c-@> coc#refresh()
-  endif
-  nmap <silent> [g <Plug>(coc-diagnostic-prev)
-  nmap <silent> ]g <Plug>(coc-diagnostic-next)
-  nmap <silent> gd <Plug>(coc-definition)
-  nmap <silent> gy <Plug>(coc-type-definition)
-  nmap <silent> gi <Plug>(coc-implementation)
-  nmap <silent> gr <Plug>(coc-references)
-  nmap <silent> gq <Plug>(coc-format)
-  nnoremap <silent> K :call ShowDocumentation()<CR>
-  function! ShowDocumentation()
-    if CocAction('hasProvider', 'hover')
-      call CocActionAsync('doHover')
+lua_add = '''
+  -- Some servers have issues with backup files, see #649
+  vim.opt.writebackup = false
+  
+  -- Having longer updatetime (default is 4000 ms = 4s) leads to noticeable
+  -- delays and poor user experience
+  vim.opt.updatetime = 300
+  
+  -- Always show the signcolumn, otherwise it would shift the text each time
+  -- diagnostics appeared/became resolved
+  vim.opt.signcolumn = "yes"
+  
+  local keyset = vim.keymap.set
+  
+  -- Autocomplete
+  function _G.check_back_space()
+    local col = vim.fn.col('.') - 1
+    return col == 0 or vim.fn.getline('.'):sub(col, col):match('%s') ~= nil
+  end
+  
+  -- Use Tab for trigger completion with characters ahead and navigate
+  local opts = { silent = true, noremap = true, expr = true, replace_keycodes = false }
+  keyset("i", "<TAB>", 'coc#pum#visible() ? coc#pum#next(1) : v:lua.check_back_space() ? "<TAB>" : coc#refresh()', opts)
+  keyset("i", "<S-TAB>", [[coc#pum#visible() ? coc#pum#prev(1) : "\<C-h>"]], opts)
+  
+  -- Make <CR> to accept selected completion item or notify coc.nvim to format
+  -- <C-g>u breaks current undo, please make your own choice
+  keyset("i", "<cr>", [[coc#pum#visible() ? coc#pum#confirm() : "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"]], opts)
+  
+  -- Use <c-j> to trigger snippets
+  -- keyset("i", "<c-y>", "<Plug>(coc-snippets-expand-jump)")
+  -- Use <c-space> to trigger completion
+  keyset("i", "<c-space>", "coc#refresh()", { silent = true, expr = true })
+  
+  -- Use `[g` and `]g` to navigate diagnostics
+  -- Use `:CocDiagnostics` to get all diagnostics of current buffer in location list
+  keyset("n", "[g", "<Plug>(coc-diagnostic-prev)", { silent = true })
+  keyset("n", "]g", "<Plug>(coc-diagnostic-next)", { silent = true })
+
+  -- GoTo code navigation
+  keyset("n", "gd", "<Plug>(coc-definition)", {silent = true})
+  keyset("n", "gy", "<Plug>(coc-type-definition)", {silent = true})
+  keyset("n", "gi", "<Plug>(coc-implementation)", {silent = true})
+  keyset("n", "gr", "<Plug>(coc-references)", {silent = true})
+  
+  -- Use K to show documentation in preview window
+  function _G.show_docs()
+    local cw = vim.fn.expand('<cword>')
+    if vim.fn.index({ 'vim', 'help' }, vim.bo.filetype) >= 0 then
+      vim.api.nvim_command('h ' .. cw)
+    elseif vim.api.nvim_eval('coc#rpc#ready()') then
+      vim.fn.CocActionAsync('doHover')
     else
-      call feedkeys('K', 'in')
-    endif
-  endfunction
-  autocmd CursorHold * silent call CocActionAsync('highlight')
-  nmap <leader>rn <Plug>(coc-rename)
-  xmap <leader>f <Plug>(coc-format-selected)
-  nmap <leader>f <Plug>(coc-format-selected)
-  augroup mygroup
-    autocmd!
-    autocmd FileType typescript,json setl formatexpr=CocAction('formatSelected')
-    autocmd User CocJumpPlaceholder call CocActionAsync('showSignatureHelp')
-  augroup end
-  xmap <leader>a <Plug>(coc-codeaction-selected)
-  nmap <leader>a <Plug>(coc-codeaction-selected)
-  nmap <leader>ac <Plug>(coc-codeaction-cursor)
-  nmap <leader>as <Plug>(coc-codeaction-source)
-  nmap <leader>qf <Plug>(coc-fix-current)
-  nmap <silent> <leader>re <Plug>(coc-codeaction-refactor)
-  xmap <silent> <leader>r <Plug>(coc-codeaction-refactor-selected)
-  nmap <silent> <leader>r <Plug>(coc-codeaction-refactor-selected)
-  nmap <leader>cl <Plug>(coc-codelens-action)
-  xmap if <Plug>(coc-funcobj-i)
-  omap if <Plug>(coc-funcobj-i)
-  xmap af <Plug>(coc-funcobj-a)
-  omap af <Plug>(coc-funcobj-a)
-  xmap ic <Plug>(coc-classobj-i)
-  omap ic <Plug>(coc-classobj-i)
-  xmap ac <Plug>(coc-classobj-a)
-  omap ac <Plug>(coc-classobj-a)
-  if has('nvim-0.4.0') || has('patch-8.2.0750')
-    nnoremap <silent><nowait><expr> <C-f> coc#float#has_scroll() ? coc#float#scroll(1) : "\<C-f>"
-    nnoremap <silent><nowait><expr> <C-b> coc#float#has_scroll() ? coc#float#scroll(0) : "\<C-b>"
-    inoremap <silent><nowait><expr> <C-f> coc#float#has_scroll() ? "\<c-r>=coc#float#scroll(1)\<cr>" : "\<Right>"
-    inoremap <silent><nowait><expr> <C-b> coc#float#has_scroll() ? "\<c-r>=coc#float#scroll(0)\<cr>" : "\<Left>"
-    vnoremap <silent><nowait><expr> <C-f> coc#float#has_scroll() ? coc#float#scroll(1) : "\<C-f>"
-    vnoremap <silent><nowait><expr> <C-b> coc#float#has_scroll() ? coc#float#scroll(0) : "\<C-b>"
-  endif
-  nmap <silent> <C-s> <Plug>(coc-range-select)
-  xmap <silent> <C-s> <Plug>(coc-range-select)
-  command! -nargs=0 Format :call CocActionAsync('format')
-  command! -nargs=? Fold :call CocAction('fold', <f-args>)
-  command! -nargs=0 OR :call CocActionAsync('runCommand', 'editor.action.organizeImport')
-  set statusline^=%{coc#status()}%{get(b:,'coc_current_function','')}
-  nnoremap <silent><nowait> <space>a :<C-u>CocList diagnostics<cr>
-  nnoremap <silent><nowait> <space>e :<C-u>CocList extentions<cr>
-  nnoremap <silent><nowait> <space>c :<C-u>CocList commands<cr>
-  nnoremap <silent><nowait> <space>o :<C-u>CocList outline<cr>
-  nnoremap <silent><nowait> <space>s :<C-u>CocList -I symbols<cr>
-  nnoremap <silent><nowait> <space>j :<C-u>CocNext<CR>
-  nnoremap <silent><nowait> <space>k :<C-u>CocPrev<CR>
-  nnoremap <silent><nowait> <space>p :<C-u>CocListResume<CR>
-  highlight CocFloating ctermbg=239
+      vim.api.nvim_command('!' .. vim.o.keywordprg .. ' ' .. cw)
+    end
+  end
+  keyset("n", "K", '<CMD>lua _G.show_docs()<CR>', { silent = true })
+  
+  -- Highlight the symbol and its references on a CursorHold event(cursor is idle)
+  vim.api.nvim_create_augroup("CocGroup", {})
+  vim.api.nvim_create_autocmd("CursorHold", {
+    group = "CocGroup",
+    command = "silent call CocActionAsync('highlight')",
+    desc = "Highlight symbol under cursor on CursorHold"
+  })
+  
+  -- Symbol renaming
+  keyset("n", "rn", "<Plug>(coc-rename)", { silent = true })
+  
+  -- Highlight the symbol and its references on a CursorHold event(cursor is idle)
+  vim.api.nvim_create_augroup("CocGroup", {})
+  vim.api.nvim_create_autocmd("CursorHold", {
+    group = "CocGroup",
+    command = "silent call CocActionAsync('highlight')",
+    desc = "Highlight symbol under cursor on CursorHold"
+  })
+
+  -- Update signature help on jump placeholder
+  vim.api.nvim_create_autocmd("User", {
+    group = "CocGroup",
+    pattern = "CocJumpPlaceholder",
+    command = "call CocActionAsync('showSignatureHelp')",
+    desc = "Update signature help on jump placeholder"
+  })
+  
+  -- Apply codeAction to the selected region
+  -- Example: `<leader>aap` for current paragraph
+  local opts = { silent = true, nowait = true }
+  keyset("n", "<leader>a", "<Plug>(coc-codeaction-cursor)", opts)
+  
+  -- Run the Code Lens actions on the current line
+  keyset("n", "<leader>cl", "<Plug>(coc-codelens-action)", opts)
+  
+  -- Remap <C-f> and <C-b> to scroll float windows/popups
+  ---@diagnostic disable-next-line: redefined-local
+  local opts = { silent = true, nowait = true, expr = true }
+  keyset("i", "<C-f>", 'coc#float#has_scroll() ? "<c-r>=coc#float#scroll(1)<cr>" : "<Right>"', opts)
+  keyset("i", "<C-b>", 'coc#float#has_scroll() ? "<c-r>=coc#float#scroll(0)<cr>" : "<Left>"', opts)
+  keyset("n", "<C-f>", 'coc#float#has_scroll() ? coc#float#scroll(1) : "<C-f>"', opts)
+  keyset("n", "<C-b>", 'coc#float#has_scroll() ? coc#float#scroll(0) : "<C-b>"', opts)
+  keyset("v", "<C-f>", 'coc#float#has_scroll() ? coc#float#scroll(1) : "<C-f>"', opts)
+  keyset("v", "<C-b>", 'coc#float#has_scroll() ? coc#float#scroll(0) : "<C-b>"', opts)
+  
+  -- " Add `:Fold` command to fold current buffer
+  vim.api.nvim_create_user_command("Fold", "call CocAction('fold', <f-args>)", { nargs = '?' })
+  
+  -- Add `:OR` command for organize imports of the current buffer
+  vim.api.nvim_create_user_command("OR", "call CocActionAsync('runCommand', 'editor.action.organizeImport')", {})
+  
+  -- Add (Neo)Vim's native statusline support
+  -- NOTE: Please see `:h coc-status` for integrations with external plugins that
+  -- provide custom statusline: lightline.vim, vim-airline
+  vim.opt.statusline:prepend("%{coc#status()}%{get(b:,'coc_current_function','')}")
+  
+  -- Coc.nvimの組み込みFormatter
+  -- Language Serverを用いたFormat
+  vim.api.nvim_create_user_command("Format", "call CocAction('format')", {}) --コマンドを登録
+  keyset("n", "<leader>nn", ":Format<cr>", { silent = true })
 '''
