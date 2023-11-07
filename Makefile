@@ -14,7 +14,7 @@ nvim:
 	ln -svnf ${PWD}/.config/nvim/init.vim ${HOME}/.config/nvim/init.vim
 
 dein:
-	sh -c "$curl -fsSL https://raw.githubusercontent.com/Shougo/dein-installer.vim/master/installer.sh)"
+	sh -c "$(curl -fsSL https://raw.githubusercontent.com/Shougo/dein-installer.vim/master/installer.sh)"
 	ln -svnf ${PWD}/.dein ${HOME}/.dein
 
 coc:
