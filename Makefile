@@ -1,5 +1,6 @@
 .PHONY: all
-all: vim nvim coc tmux tig
+
+all: vim nvim dein coc tmux tig
 
 help:
 	cat Makefile
@@ -11,6 +12,9 @@ nvim:
 	sudo pacman -S neovim
 	if [ ! -d ${HOME}/.config/nvim ]; then mkdir -p ${HOME}/.config/nvim; fi
 	ln -svnf ${PWD}/.config/nvim/init.vim ${HOME}/.config/nvim/init.vim
+
+dein:
+	sh -c "$curl -fsSL https://raw.githubusercontent.com/Shougo/dein-installer.vim/master/installer.sh)"
 	ln -svnf ${PWD}/.dein ${HOME}/.dein
 
 coc:
