@@ -68,18 +68,34 @@ inoremap <C-a> <Esc>^a
 
 " ====== dein.vim plugin manager ======
 
+let $CACHE = expand('~/.cache')
+if !($CACHE->isdirectory())
+  call mkdir($CACHE, 'p')
+endif
+if &runtimepath !~# '/dein.vim'
+  let s:dir = 'dein.vim'->fnamemodify(':p')
+  if !(s:dir->isdirectory())
+    let s:dir = $CACHE .. '/dein/repos/github.com/Shougo/dein.vim'
+    if !(s:dir->isdirectory())
+      execute '!git clone https://github.com/Shougo/dein.vim' s:dir
+    endif
+  endif
+  execute 'set runtimepath^='
+        \ .. s:dir->fnamemodify(':p')->substitute('[/\\]$', '', '')
+endif
+
 " Ward off unexpected things that your distro might have made, as
 " well as sanely reset options when re-sourcing .vimrc
 set nocompatible
 
 " Set Dein base path (required)
-let s:dein_base = '/home/goushino/.cache/dein'
+let s:dein_base = '~/.cache/dein'
 
 " Set Dein source path (required)
-let s:dein_src = '/home/goushino/.cache/dein/repos/github.com/Shougo/dein.vim'
+let s:dein_src = '~/.cache/dein/repos/github.com/Shougo/dein.vim'
 
 " Set Dein runtime path (required)
-execute 'set runtimepath+=' . s:dein_src
+execute 'set runtimepath+=' .. s:dein_src
 
 " tomlセット
 let s:toml_dir=expand('~/.dein/')
