@@ -41,7 +41,8 @@ lua_add = '''
     options = {
       theme = 'sonokai',
       section_separators = "", -- See issue #773
-      component_separators = ""
+      component_separators = "",
+      globalstatus = true
     },
     tabline = {
       lualine_a = {'buffers'},
