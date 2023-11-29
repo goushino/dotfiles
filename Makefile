@@ -1,6 +1,6 @@
 .PHONY: all
 
-all: vim nvim dein coc tmux tig
+all: vim nvim dein coc tmux tig alacritty
 
 help:
 	cat Makefile
@@ -28,3 +28,8 @@ tmux:
 tig:
 	sudo pacman -S tig
 	ln -svnf ${PWD}/.tigrc ${HOME}/.tigrc
+
+alacritty:
+	sudo pacman -S alacritty
+	if [ ! d ${HOME}/.config/nvim ]; then mkdir -p ${HOME}/.config/alacritty; fi
+	ln -svnf ${PWD}/.config/alacritty/alacritty.yml ${HOME}/.config/alacritty/alacritty.yml
